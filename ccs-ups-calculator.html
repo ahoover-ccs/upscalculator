@@ -466,7 +466,7 @@
           </tr>
         </tbody>
       </table>
-      <p class="small">Transit assumptions: CCS final-mile delivery is same day after the master shipment arrives in Denver.</p>
+      <p class="small">Transit assumptions: CCS final-mile delivery is same day after the master shipment arrives in Denver. For worst-case scenario, add 1 day to the total time.</p>
     </div>
   </div>
 
@@ -606,7 +606,7 @@
         const annualSavings = (directDaily - ccsDaily) * BUSINESS_DAYS_YEAR;
         const savingsClass = annualSavings >= 0 ? "save-up" : "save-down";
         const savingsText = annualSavings >= 0 ? toCurrency(annualSavings) : `-${toCurrency(Math.abs(annualSavings))}`;
-        const ccsTransit = `${speed.transit.replace("Direct:", "Master:")} + CCS same-day final mile`;
+        const ccsTransit = `${speed.transit.replace("Direct:", "UPS:")} + CCS same-day final mile`;
 
         return `
           <tr>
