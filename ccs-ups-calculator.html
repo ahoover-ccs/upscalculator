@@ -406,6 +406,10 @@
             <label for="dasSurcharge">Delivery area surcharge ($)</label>
             <input id="dasSurcharge" type="number" min="0" step="0.01" value="0">
           </div>
+          <div class="field span-3">
+            <label for="upsDiscountPct">Your negotiated UPS discount (%)</label>
+            <input id="upsDiscountPct" type="number" min="0" max="100" step="0.1" value="0">
+          </div>
         </div>
       </div>
 
@@ -566,14 +570,17 @@
       heightIn,
       fuelPct,
       residentialSurcharge,
-      dasSurcharge
+      dasSurcharge,
+      upsDiscountPct
     }) {
       const billableWeight = effectiveBillableWeight(actualWeight, lengthIn, widthIn, heightIn, speedKey);
       const groundBase = interpolateRate(billableWeight, GROUND_RATE_TABLE[zone]);
       const speedAdjusted = Math.max(groundBase, MIN_GROUND_CHARGE) * SPEED_MULTIPLIER[speedKey];
       const surchargeBase = speedAdjusted + residentialSurcharge + dasSurcharge;
       const withFuel = surchargeBase * (1 + fuelPct / 100);
-      return { total: withFuel };
+      const safeDiscountPct = Math.min(Math.max(upsDiscountPct, 0), 100);
+      const discountedTotal = withFuel * (1 - safeDiscountPct / 100);
+      return { total: discountedTotal };
     }
 
     function renderSpeedSuggestions(inputs, zone) {
@@ -587,7 +594,8 @@
           heightIn: inputs.pkgHei,
           fuelPct: inputs.fuelPct,
           residentialSurcharge: inputs.residentialSurcharge,
-          dasSurcharge: inputs.dasSurcharge
+          dasSurcharge: inputs.dasSurcharge,
+          upsDiscountPct: inputs.upsDiscountPct
         });
         const directDaily = directPerPackage.total * inputs.dailyPackages;
 
@@ -600,7 +608,8 @@
           heightIn: inputs.pkgHei,
           fuelPct: inputs.fuelPct,
           residentialSurcharge: inputs.residentialSurcharge,
-          dasSurcharge: inputs.dasSurcharge
+          dasSurcharge: inputs.dasSurcharge,
+          upsDiscountPct: inputs.upsDiscountPct
         });
         const ccsDaily = masterShipment.total + inputs.ccsStopFee * inputs.dailyPackages;
         const annualSavings = (directDaily - ccsDaily) * BUSINESS_DAYS_YEAR;
@@ -634,6 +643,7 @@
         fuelPct: getNumeric("fuelPct"),
         residentialSurcharge: getNumeric("resSurcharge"),
         dasSurcharge: getNumeric("dasSurcharge"),
+        upsDiscountPct: getNumeric("upsDiscountPct"),
         pkgWeight: getNumeric("pkgWeight"),
         pkgLen: getNumeric("pkgLen"),
         pkgWid: getNumeric("pkgWid"),
@@ -644,9 +654,13 @@
         errorEl.textContent = "Please enter a valid 5-digit origin ZIP code.";
         return;
       }
-      const values = [inputs.dailyPackages, inputs.ccsStopFee, inputs.fuelPct, inputs.residentialSurcharge, inputs.dasSurcharge, inputs.pkgWeight, inputs.pkgLen, inputs.pkgWid, inputs.pkgHei];
+      const values = [inputs.dailyPackages, inputs.ccsStopFee, inputs.fuelPct, inputs.residentialSurcharge, inputs.dasSurcharge, inputs.upsDiscountPct, inputs.pkgWeight, inputs.pkgLen, inputs.pkgWid, inputs.pkgHei];
       if (values.some((v) => Number.isNaN(v) || v < 0)) {
         errorEl.textContent = "Please ensure all numeric inputs are valid and non-negative.";
+        return;
+      }
+      if (inputs.upsDiscountPct > 100) {
+        errorEl.textContent = "UPS discount override must be between 0 and 100 percent.";
         return;
       }
       if (inputs.dailyPackages < 1) {
@@ -669,7 +683,8 @@
           heightIn: inputs.pkgHei,
           fuelPct: inputs.fuelPct,
           residentialSurcharge: inputs.residentialSurcharge,
-          dasSurcharge: inputs.dasSurcharge
+          dasSurcharge: inputs.dasSurcharge,
+          upsDiscountPct: inputs.upsDiscountPct
         });
         const directTotal = perPackage.total * inputs.dailyPackages;
 
@@ -682,7 +697,8 @@
           heightIn: inputs.pkgHei,
           fuelPct: inputs.fuelPct,
           residentialSurcharge: inputs.residentialSurcharge,
-          dasSurcharge: inputs.dasSurcharge
+          dasSurcharge: inputs.dasSurcharge,
+          upsDiscountPct: inputs.upsDiscountPct
         });
         const ccsFinalMile = inputs.ccsStopFee * inputs.dailyPackages;
         const ccsTotal = masterShipment.total + ccsFinalMile;
@@ -720,6 +736,7 @@
       el("fuelPct").value = "16.5";
       el("resSurcharge").value = "6.5";
       el("dasSurcharge").value = "0";
+      el("upsDiscountPct").value = "0";
       el("pkgWeight").value = "3";
       el("pkgLen").value = "6";
       el("pkgWid").value = "10";
