@@ -1,0 +1,754 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Crystal Courier vs UPS Calculator</title>
+  <style>
+    :root {
+      --ccs-blue: #073763;
+      --ccs-accent: #ffe599;
+      --ccs-bg: #f6f1ea;
+      --ink: #231f20;
+      --white: #ffffff;
+      --ups-brown: #7e5844;
+      --ups-brown-dark: #69422d;
+      --ups-gold: #ffc400;
+      --line: #ddcfbc;
+      --ok: #0e6e37;
+      --warn: #8d2f2f;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Garamond, "Times New Roman", serif;
+      color: var(--ink);
+      background: linear-gradient(180deg, #f9f5ee 0%, var(--ccs-bg) 100%);
+    }
+
+    .wrap {
+      max-width: 1040px;
+      margin: 0 auto;
+      padding: 18px;
+    }
+
+    .hero {
+      border: 1px solid #0f497e;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #0b4578 0%, var(--ccs-blue) 100%);
+      box-shadow: 0 4px 14px rgba(7, 55, 99, 0.22);
+      padding: 16px;
+      margin-bottom: 14px;
+    }
+
+    h1 {
+      margin: 0 0 6px;
+      color: var(--ccs-accent);
+      font-size: 1.9rem;
+      line-height: 1.1;
+    }
+
+    .subtitle {
+      margin: 0;
+      font-size: 1.02rem;
+      color: #f6f8fb;
+    }
+
+    .destination {
+      margin-top: 8px;
+      font-size: 0.95rem;
+      color: #d9e6f4;
+    }
+
+    .card {
+      background: var(--white);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 14px;
+      margin-bottom: 14px;
+      box-shadow: 0 2px 8px rgba(20, 16, 12, 0.05);
+    }
+
+    .section {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 12px;
+      margin-bottom: 12px;
+    }
+
+    .section h2 {
+      margin: 0 0 8px;
+      font-size: 1.1rem;
+    }
+
+    .section.agnostic {
+      background: #ffffff;
+    }
+
+    .section.ups {
+      border-color: #8d6652;
+      background: linear-gradient(18.83deg, #7e5844 37.21%, #69422d 100%);
+    }
+
+    .section.ups h2 {
+      color: #fff3cf;
+    }
+
+    .section.ccs {
+      border-color: #0d4578;
+      background: linear-gradient(180deg, #0f4a7f 0%, var(--ccs-blue) 100%);
+    }
+
+    .section.ccs h2 {
+      color: var(--ccs-accent);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 10px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .field label {
+      font-size: 0.94rem;
+      font-weight: 600;
+    }
+
+    .field input,
+    .field select {
+      border: 1px solid #b9ac99;
+      border-radius: 9px;
+      background: #fff;
+      font-family: inherit;
+      font-size: 1rem;
+      padding: 8px 10px;
+      color: var(--ink);
+    }
+
+    .section.ups .field input,
+    .section.ups .field select {
+      border-color: #4f3327;
+      background: #fffaf0;
+    }
+
+    .section.ccs .field input {
+      border-color: #083255;
+      background: #f5fbff;
+    }
+
+    .section.ups .field label,
+    .section.ccs .field label {
+      color: #ffffff;
+    }
+
+    .span-2 { grid-column: span 2; }
+    .span-3 { grid-column: span 3; }
+    .span-4 { grid-column: span 4; }
+    .span-6 { grid-column: span 6; }
+    .span-12 { grid-column: span 12; }
+
+    .actions {
+      margin-top: 10px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+
+    button {
+      border: 0;
+      border-radius: 9px;
+      padding: 9px 13px;
+      font-family: inherit;
+      font-size: 1rem;
+      cursor: pointer;
+      color: #fff;
+      background: linear-gradient(135deg, #0b5ea3 0%, #073763 55%, #052949 100%);
+      box-shadow: 0 3px 8px rgba(7, 55, 99, 0.3);
+      transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease;
+    }
+
+    button:hover {
+      filter: brightness(1.05);
+      box-shadow: 0 5px 12px rgba(7, 55, 99, 0.35);
+    }
+
+    button:active {
+      transform: translateY(1px);
+      filter: brightness(0.97);
+      box-shadow: 0 2px 6px rgba(7, 55, 99, 0.3);
+    }
+
+    button.secondary {
+      background: #7e7367;
+      box-shadow: none;
+    }
+
+    button.secondary:hover {
+      filter: brightness(1.02);
+      box-shadow: none;
+    }
+
+    button.secondary:active {
+      transform: translateY(1px);
+      filter: brightness(0.98);
+      box-shadow: none;
+    }
+
+    .pill {
+      border-radius: 999px;
+      border: 1px solid #c2d7ea;
+      background: #f4f9ff;
+      padding: 4px 10px;
+      font-size: 0.9rem;
+    }
+
+    .error {
+      min-height: 1.1em;
+      margin-top: 6px;
+      color: var(--warn);
+      font-weight: 600;
+    }
+
+    .small {
+      margin-top: 6px;
+      font-size: 0.88rem;
+      opacity: 0.88;
+    }
+
+    .results {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(240px, 1fr));
+      gap: 10px;
+    }
+
+    .result-box {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #fffdf9;
+      padding: 12px;
+    }
+
+    .result-box.ups-result {
+      border-color: #8d6652;
+      background: #fff2df;
+    }
+
+    .result-box.ccs-result {
+      border-color: #0e4b80;
+      background: #eff6ff;
+    }
+
+    .result-box h3 {
+      margin: 0 0 6px;
+      font-size: 1.05rem;
+    }
+
+    .money {
+      font-size: 1.55rem;
+      font-weight: 700;
+      line-height: 1.05;
+    }
+
+    .highlight {
+      margin-top: 10px;
+      border: 1px solid #dfcfb8;
+      border-radius: 12px;
+      padding: 10px 12px;
+      background: #fffdf9;
+    }
+
+    .highlight.good {
+      color: var(--ok);
+      border-color: #b9dfc8;
+      background: #f0fff5;
+    }
+
+    .highlight.bad {
+      color: var(--warn);
+      border-color: #efc7c7;
+      background: #fff2f2;
+    }
+
+    .speed-card {
+      border: 1px solid #8d6652;
+      border-radius: 12px;
+      background: linear-gradient(180deg, #fff8eb 0%, #ffefc7 100%);
+      padding: 12px;
+    }
+
+    .speed-card h3 {
+      margin: 0 0 8px;
+      color: var(--ups-brown-dark);
+      font-size: 1.03rem;
+    }
+
+    .speed-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.95rem;
+    }
+
+    .speed-table th,
+    .speed-table td {
+      border-bottom: 1px solid #eadcc8;
+      padding: 7px 5px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    .speed-table th {
+      color: #4a2e21;
+      font-size: 0.92rem;
+      font-weight: 700;
+    }
+
+    .speed-table tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .save-up {
+      color: var(--ok);
+      font-weight: 700;
+    }
+
+    .save-down {
+      color: var(--warn);
+      font-weight: 700;
+    }
+
+    @media (max-width: 900px) {
+      .span-2, .span-3, .span-4, .span-6 { grid-column: span 6; }
+    }
+
+    @media (max-width: 640px) {
+      .wrap { padding: 10px; }
+      h1 { font-size: 1.6rem; }
+      .span-2, .span-3, .span-4, .span-6 { grid-column: span 12; }
+      .results { grid-template-columns: 1fr; }
+      .money { font-size: 1.36rem; }
+      .speed-table { font-size: 0.9rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="hero">
+      <h1>Crystal Courier vs. UPS Savings Calculator</h1>
+      <p class="subtitle">Compare shipping to your customers directly through UPS against using CCS in the final mile.</p>
+      <p class="destination">Instead of shipping multiple individual packages to your customers, ship a single master shipment to CCS and let us handle the hard part.</p>
+    </div>
+
+    <div class="card">
+      <input id="destZip" value="80204" type="hidden">
+
+      <div class="section agnostic">
+        <h2>General Inputs</h2>
+        <div class="grid">
+          <div class="field span-3">
+            <label for="originZip">Origin ZIP Code</label>
+            <input id="originZip" value="63102" maxlength="5" inputmode="numeric">
+          </div>
+          <div class="field span-3">
+            <label for="dailyPackages">Packages per day</label>
+            <input id="dailyPackages" type="number" min="1" step="1" value="25">
+          </div>
+          <div class="field span-2">
+            <label for="pkgWeight">Package weight (lbs)</label>
+            <input id="pkgWeight" type="number" min="0.1" step="0.1" value="3">
+          </div>
+          <div class="field span-2">
+            <label for="pkgLen">Length (in)</label>
+            <input id="pkgLen" type="number" min="1" step="0.1" value="6">
+          </div>
+          <div class="field span-2">
+            <label for="pkgWid">Width (in)</label>
+            <input id="pkgWid" type="number" min="1" step="0.1" value="10">
+          </div>
+          <div class="field span-2">
+            <label for="pkgHei">Height (in)</label>
+            <input id="pkgHei" type="number" min="1" step="0.1" value="4">
+          </div>
+        </div>
+      </div>
+
+      <div class="section ups">
+        <h2>UPS Inputs</h2>
+        <div class="grid">
+          <div class="field span-3">
+            <label for="shipSpeed">UPS service level</label>
+            <select id="shipSpeed">
+              <option value="ground">UPS Ground</option>
+              <option value="3day">UPS 3-Day Select</option>
+              <option value="2day">UPS 2nd Day Air</option>
+              <option value="overnight">UPS Next Day Air</option>
+            </select>
+          </div>
+          <div class="field span-3">
+            <label for="fuelPct">Fuel surcharge (%)</label>
+            <input id="fuelPct" type="number" min="0" step="0.1" value="16.5">
+          </div>
+          <div class="field span-3">
+            <label for="resSurcharge">Residential surcharge ($)</label>
+            <input id="resSurcharge" type="number" min="0" step="0.01" value="6.5">
+          </div>
+          <div class="field span-3">
+            <label for="dasSurcharge">Delivery area surcharge ($)</label>
+            <input id="dasSurcharge" type="number" min="0" step="0.01" value="0">
+          </div>
+          <div class="field span-3">
+            <label for="upsDiscountPct">Your negotiated UPS discount (%)</label>
+            <input id="upsDiscountPct" type="number" min="0" max="100" step="0.1" value="0">
+          </div>
+        </div>
+      </div>
+
+      <div class="section ccs">
+        <h2>Crystal Courier Inputs</h2>
+        <div class="grid">
+          <div class="field span-3">
+            <label for="ccsStopFee">CCS per stop fee ($)</label>
+            <input id="ccsStopFee" type="number" min="0" step="0.01" value="10">
+          </div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button id="calcBtn">Calculate Savings</button>
+        <button id="resetBtn" class="secondary">Reset Defaults</button>
+        <span id="zonePill" class="pill">Zone: estimating...</span>
+      </div>
+      <div id="error" class="error"></div>
+      <p class="small">Model based on published UPS pricing as of 4/22/26. The defaults above are the current common rates but be sure to input the surcharges relevant to your UPS shipping agreement.</p>
+    </div>
+
+    <div class="card">
+      <div class="results">
+        <div class="result-box ups-result">
+          <h3>Option 1: Direct UPS to Customers</h3>
+          <div class="money" id="directTotal">$0.00</div>
+          <div class="small" id="directBreakdown">Per package: $0.00</div>
+        </div>
+
+        <div class="result-box ccs-result">
+          <h3>Option 2: Master Shipment + CCS Final Mile</h3>
+          <div class="money" id="ccsTotal">$0.00</div>
+          <div class="small" id="ccsBreakdown">Master UPS: $0.00 | CCS Final Mile: $0.00</div>
+        </div>
+      </div>
+
+      <div id="comparisonBox" class="highlight">
+        Enter values and click <strong>Calculate Savings</strong>.
+      </div>
+    </div>
+
+    <div class="card speed-card">
+      <h3>Suggested Service Scenarios (UPS Speed vs CCS Model)</h3>
+      <table class="speed-table">
+        <thead>
+          <tr>
+            <th>UPS Speed</th>
+            <th>Direct UPS Cost/Day</th>
+            <th>CCS Model Cost/Day</th>
+            <th>CCS Savings/Year</th>
+            <th>Transit Time Framing</th>
+          </tr>
+        </thead>
+        <tbody id="speedRows">
+          <tr>
+            <td colspan="5">Run a calculation to generate scenario suggestions.</td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="small">Transit assumptions: CCS final-mile delivery is same day after the master shipment arrives in Denver. For worst-case scenario, add 1 day to the total time.</p>
+    </div>
+  </div>
+
+  <script>
+    const DEST_ZIP = "80204";
+    const DIM_DIVISOR = 139;
+    const MIN_GROUND_CHARGE = 10.75;
+    const BUSINESS_DAYS_YEAR = 260;
+
+    const GROUND_RATE_TABLE = {
+      2: [{ w: 1, c: 11.5 }, { w: 5, c: 14.8 }, { w: 10, c: 18.2 }, { w: 20, c: 25.4 }],
+      5: [{ w: 1, c: 14.25 }, { w: 5, c: 18.1 }, { w: 10, c: 23.5 }, { w: 20, c: 35.9 }],
+      8: [{ w: 1, c: 16.9 }, { w: 5, c: 22.4 }, { w: 10, c: 31.1 }, { w: 20, c: 49.8 }]
+    };
+
+    const SPEEDS = [
+      { key: "ground", label: "UPS Ground", mult: 1, transit: "Direct: 1-5 business days" },
+      { key: "3day", label: "UPS 3-Day Select", mult: 1.75, transit: "Direct: up to 3 business days" },
+      { key: "2day", label: "UPS 2nd Day Air", mult: 2.5, transit: "Direct: 2 business days" },
+      { key: "overnight", label: "UPS Next Day Air", mult: 5, transit: "Direct: next business day" }
+    ];
+
+    const SPEED_MULTIPLIER = SPEEDS.reduce((acc, speed) => {
+      acc[speed.key] = speed.mult;
+      return acc;
+    }, {});
+
+    const el = (id) => document.getElementById(id);
+
+    function toCurrency(n) {
+      return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(n);
+    }
+
+    function getNumeric(id) {
+      return Number(el(id).value);
+    }
+
+    function isValidZip(zip) {
+      return /^\d{5}$/.test(zip);
+    }
+
+    async function zipToLatLon(zip) {
+      const resp = await fetch(`https://api.zippopotam.us/us/${zip}`);
+      if (!resp.ok) throw new Error(`ZIP lookup failed for ${zip}`);
+      const data = await resp.json();
+      const place = data.places && data.places[0];
+      if (!place) throw new Error("No ZIP location data");
+      return { lat: Number(place.latitude), lon: Number(place.longitude) };
+    }
+
+    function milesBetween(lat1, lon1, lat2, lon2) {
+      const R = 3958.8;
+      const toRad = (deg) => (deg * Math.PI) / 180;
+      const dLat = toRad(lat2 - lat1);
+      const dLon = toRad(lon2 - lon1);
+      const a = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
+      const c = 2 * Math.asin(Math.sqrt(a));
+      return R * c;
+    }
+
+    function zoneFromMiles(miles) {
+      if (miles <= 300) return 2;
+      if (miles <= 1000) return 5;
+      return 8;
+    }
+
+    function interpolateRate(weight, rows) {
+      if (weight <= rows[0].w) return rows[0].c;
+      for (let i = 0; i < rows.length - 1; i += 1) {
+        const a = rows[i];
+        const b = rows[i + 1];
+        if (weight >= a.w && weight <= b.w) {
+          const ratio = (weight - a.w) / (b.w - a.w);
+          return a.c + ratio * (b.c - a.c);
+        }
+      }
+      const last = rows[rows.length - 1];
+      const prev = rows[rows.length - 2];
+      const slope = (last.c - prev.c) / (last.w - prev.w);
+      return last.c + (weight - last.w) * slope;
+    }
+
+    function effectiveBillableWeight(actualWeight, l, w, h, speedKey) {
+      const dimWeight = (l * w * h) / DIM_DIVISOR;
+      if (speedKey === "ground") {
+        return Math.max(actualWeight, dimWeight * 0.7);
+      }
+      return Math.max(actualWeight, dimWeight);
+    }
+
+    function upsShipmentPrice({
+      zone,
+      speedKey,
+      actualWeight,
+      lengthIn,
+      widthIn,
+      heightIn,
+      fuelPct,
+      residentialSurcharge,
+      dasSurcharge,
+      upsDiscountPct
+    }) {
+      const billableWeight = effectiveBillableWeight(actualWeight, lengthIn, widthIn, heightIn, speedKey);
+      const groundBase = interpolateRate(billableWeight, GROUND_RATE_TABLE[zone]);
+      const speedAdjusted = Math.max(groundBase, MIN_GROUND_CHARGE) * SPEED_MULTIPLIER[speedKey];
+      const surchargeBase = speedAdjusted + residentialSurcharge + dasSurcharge;
+      const withFuel = surchargeBase * (1 + fuelPct / 100);
+      const safeDiscountPct = Math.min(Math.max(upsDiscountPct, 0), 100);
+      const discountedTotal = withFuel * (1 - safeDiscountPct / 100);
+      return { total: discountedTotal };
+    }
+
+    function renderSpeedSuggestions(inputs, zone) {
+      const rows = SPEEDS.map((speed) => {
+        const directPerPackage = upsShipmentPrice({
+          zone,
+          speedKey: speed.key,
+          actualWeight: inputs.pkgWeight,
+          lengthIn: inputs.pkgLen,
+          widthIn: inputs.pkgWid,
+          heightIn: inputs.pkgHei,
+          fuelPct: inputs.fuelPct,
+          residentialSurcharge: inputs.residentialSurcharge,
+          dasSurcharge: inputs.dasSurcharge,
+          upsDiscountPct: inputs.upsDiscountPct
+        });
+        const directDaily = directPerPackage.total * inputs.dailyPackages;
+
+        const masterShipment = upsShipmentPrice({
+          zone,
+          speedKey: speed.key,
+          actualWeight: inputs.pkgWeight * inputs.dailyPackages,
+          lengthIn: inputs.pkgLen * inputs.dailyPackages,
+          widthIn: inputs.pkgWid,
+          heightIn: inputs.pkgHei,
+          fuelPct: inputs.fuelPct,
+          residentialSurcharge: inputs.residentialSurcharge,
+          dasSurcharge: inputs.dasSurcharge,
+          upsDiscountPct: inputs.upsDiscountPct
+        });
+        const ccsDaily = masterShipment.total + inputs.ccsStopFee * inputs.dailyPackages;
+        const annualSavings = (directDaily - ccsDaily) * BUSINESS_DAYS_YEAR;
+        const savingsClass = annualSavings >= 0 ? "save-up" : "save-down";
+        const savingsText = annualSavings >= 0 ? toCurrency(annualSavings) : `-${toCurrency(Math.abs(annualSavings))}`;
+        const ccsTransit = `${speed.transit.replace("Direct:", "UPS:")} + CCS same-day final mile`;
+
+        return `
+          <tr>
+            <td>${speed.label}</td>
+            <td>${toCurrency(directDaily)}</td>
+            <td>${toCurrency(ccsDaily)}</td>
+            <td class="${savingsClass}">${savingsText}</td>
+            <td>${ccsTransit}</td>
+          </tr>
+        `;
+      }).join("");
+
+      el("speedRows").innerHTML = rows;
+    }
+
+    async function calculate() {
+      const errorEl = el("error");
+      errorEl.textContent = "";
+
+      const inputs = {
+        originZip: el("originZip").value.trim(),
+        dailyPackages: getNumeric("dailyPackages"),
+        ccsStopFee: getNumeric("ccsStopFee"),
+        speedKey: el("shipSpeed").value,
+        fuelPct: getNumeric("fuelPct"),
+        residentialSurcharge: getNumeric("resSurcharge"),
+        dasSurcharge: getNumeric("dasSurcharge"),
+        upsDiscountPct: getNumeric("upsDiscountPct"),
+        pkgWeight: getNumeric("pkgWeight"),
+        pkgLen: getNumeric("pkgLen"),
+        pkgWid: getNumeric("pkgWid"),
+        pkgHei: getNumeric("pkgHei")
+      };
+
+      if (!isValidZip(inputs.originZip)) {
+        errorEl.textContent = "Please enter a valid 5-digit origin ZIP code.";
+        return;
+      }
+      const values = [inputs.dailyPackages, inputs.ccsStopFee, inputs.fuelPct, inputs.residentialSurcharge, inputs.dasSurcharge, inputs.upsDiscountPct, inputs.pkgWeight, inputs.pkgLen, inputs.pkgWid, inputs.pkgHei];
+      if (values.some((v) => Number.isNaN(v) || v < 0)) {
+        errorEl.textContent = "Please ensure all numeric inputs are valid and non-negative.";
+        return;
+      }
+      if (inputs.upsDiscountPct > 100) {
+        errorEl.textContent = "UPS discount override must be between 0 and 100 percent.";
+        return;
+      }
+      if (inputs.dailyPackages < 1) {
+        errorEl.textContent = "Packages per day must be at least 1.";
+        return;
+      }
+
+      try {
+        const [origin, dest] = await Promise.all([zipToLatLon(inputs.originZip), zipToLatLon(DEST_ZIP)]);
+        const miles = milesBetween(origin.lat, origin.lon, dest.lat, dest.lon);
+        const zone = zoneFromMiles(miles);
+        el("zonePill").textContent = `Zone: ${zone} (${Math.round(miles)} miles to 80204)`;
+
+        const perPackage = upsShipmentPrice({
+          zone,
+          speedKey: inputs.speedKey,
+          actualWeight: inputs.pkgWeight,
+          lengthIn: inputs.pkgLen,
+          widthIn: inputs.pkgWid,
+          heightIn: inputs.pkgHei,
+          fuelPct: inputs.fuelPct,
+          residentialSurcharge: inputs.residentialSurcharge,
+          dasSurcharge: inputs.dasSurcharge,
+          upsDiscountPct: inputs.upsDiscountPct
+        });
+        const directTotal = perPackage.total * inputs.dailyPackages;
+
+        const masterShipment = upsShipmentPrice({
+          zone,
+          speedKey: inputs.speedKey,
+          actualWeight: inputs.pkgWeight * inputs.dailyPackages,
+          lengthIn: inputs.pkgLen * inputs.dailyPackages,
+          widthIn: inputs.pkgWid,
+          heightIn: inputs.pkgHei,
+          fuelPct: inputs.fuelPct,
+          residentialSurcharge: inputs.residentialSurcharge,
+          dasSurcharge: inputs.dasSurcharge,
+          upsDiscountPct: inputs.upsDiscountPct
+        });
+        const ccsFinalMile = inputs.ccsStopFee * inputs.dailyPackages;
+        const ccsTotal = masterShipment.total + ccsFinalMile;
+
+        el("directTotal").textContent = toCurrency(directTotal);
+        el("directBreakdown").textContent = `Per package: ${toCurrency(perPackage.total)} x ${inputs.dailyPackages}`;
+        el("ccsTotal").textContent = toCurrency(ccsTotal);
+        el("ccsBreakdown").textContent = `Master UPS: ${toCurrency(masterShipment.total)} | CCS final mile: ${toCurrency(ccsFinalMile)}`;
+
+        const diff = directTotal - ccsTotal;
+        const comparisonBox = el("comparisonBox");
+        if (diff > 0) {
+          comparisonBox.className = "highlight good";
+          comparisonBox.innerHTML = `<strong>Using CCS saves ${toCurrency(diff)} per day.</strong><br><span class="small">${toCurrency(diff * BUSINESS_DAYS_YEAR)} projected annual savings (260 business days).</span>`;
+        } else if (diff < 0) {
+          comparisonBox.className = "highlight bad";
+          comparisonBox.innerHTML = `<strong>Direct UPS is lower by ${toCurrency(Math.abs(diff))} per day in this scenario.</strong><br><span class="small">Try adjusting service speed, stop fee, package dimensions, or package count.</span>`;
+        } else {
+          comparisonBox.className = "highlight";
+          comparisonBox.innerHTML = "<strong>Both options are cost-equivalent in this scenario.</strong>";
+        }
+
+        renderSpeedSuggestions(inputs, zone);
+      } catch (err) {
+        el("zonePill").textContent = "Zone: estimate unavailable";
+        errorEl.textContent = "Could not estimate zone from ZIP lookup. Please verify the ZIP and internet access.";
+      }
+    }
+
+    function resetDefaults() {
+      el("originZip").value = "94105";
+      el("dailyPackages").value = "25";
+      el("ccsStopFee").value = "10";
+      el("shipSpeed").value = "ground";
+      el("fuelPct").value = "16.5";
+      el("resSurcharge").value = "6.5";
+      el("dasSurcharge").value = "0";
+      el("upsDiscountPct").value = "0";
+      el("pkgWeight").value = "3";
+      el("pkgLen").value = "6";
+      el("pkgWid").value = "10";
+      el("pkgHei").value = "4";
+      el("zonePill").textContent = "Zone: estimating...";
+      el("error").textContent = "";
+      el("speedRows").innerHTML = "<tr><td colspan='5'>Run a calculation to generate scenario suggestions.</td></tr>";
+    }
+
+    el("calcBtn").addEventListener("click", calculate);
+    el("resetBtn").addEventListener("click", resetDefaults);
+    window.addEventListener("load", calculate);
+  </script>
+</body>
+</html>
